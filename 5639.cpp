@@ -4,44 +4,64 @@
 
 using namespace std;
 
-vector <int> preorder;
+struct node {
+	int left = 0;
+	int right = 0;
+};
 
-void PostTraversal(int idx1, int idx2){
-	int size = idx2-idx1+1;
-	int i;
+struct node tree[1000001];
 
-	if(size == 1){ // root
-		cout << preorder[idx1] << '\n';
-		return;
-	}
-	// find division line
-	for(i=idx1+1; i<=idx2; i++){
-		if(preorder[i]>preorder[idx1]){
-			break;
-		}
-	}
-	int idx=i-1;
+void Visit(int val){
+	cout << val << '\n';
+}
+vector <int> PostTraversal(int n){
+	static vector <int> post_seq;
 	
-	if(idx != idx1){ // not all right subtree
-		PostTraversal(idx1+1, idx);
+	if(tree[n].left != 0){
+		PostTraversal(tree[n].left);
 	}
-	if(idx != idx2){ // not all left stubtree
-		PostTraversal(idx+1, idx2);
+	if(tree[n].right != 0){
+		PostTraversal(tree[n].right);
 	}
+	post_seq.push_back(n);
 	
-	cout << preorder[idx1] << '\n';
+	return post_seq;
 }
 
 int main(){
-	int v;
+	int parent, child, root;
 	
-	while(scanf("%d", &v) != EOF){
-		preorder.push_back(v);
+	scanf("%d", &root);
+
+	while(scanf("%d", &child) != EOF){
+		parent = root;
+		while(true){
+			if(parent > child){
+				if(tree[parent].left != 0){
+					parent = tree[parent].left;
+				}
+				else{
+					tree[parent].left = child;
+					break;	
+				}
+			}
+			else{
+				if(tree[parent].right != 0){
+					parent = tree[parent].right;
+				}
+				else{
+					tree[parent].right = child;
+					break;	
+				}
+ 			}
+		}
 	}
 	
-	int size = preorder.size();
-	PostTraversal(0, size-1);
-
+	vector <int> postorder = PostTraversal(root);
+	int size = postorder.size();
+	for(int i=0; i<size-1; i++){
+		cout << postorder[i] << '\n';
+	}
+	cout << postorder[size-1];
 	return 0;
 }
-
