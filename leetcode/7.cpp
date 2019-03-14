@@ -1,8 +1,8 @@
 class Solution {
 public:
     int reverse(int x) {
-        vector <int> r;
-        int digit = 0, result = 0;
+        int r;
+        int result = 0;
         bool sign = true;
         
         if(x < 0){
@@ -16,18 +16,12 @@ public:
         
         // find the number of digits
         do {
-            r.push_back(x % 10);
+            r = x % 10;
             x = x / 10;
-            digit++;
+            
+            if((result > INT_MAX/10) || (result == INT_MAX/10 && r > 7)) return 0;        
+            result = result*10 + r;
         } while(x != 0);
-        
-        // reverse x
-        digit--;
-        for(int i=0; i<=digit; i++){
-            result += r[i] * pow(10, (digit-i));
-            // check overflow
-            if(result < 0) return 0;
-        }
         
         return (sign? result : -1*result);
     }
