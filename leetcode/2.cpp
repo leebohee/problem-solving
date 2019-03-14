@@ -15,27 +15,14 @@ public:
         result = new ListNode(0);
         cur = result;
         
-        while(true){
-            if(l1 != NULL && l2!=NULL){
-                cur->val = l1->val + l2->val;
-                l1 = l1->next;
-                l2 = l2->next;
-            }
-            else if(l1 == NULL && l2!=NULL){
-                cur->val = l2->val;
-                l2 = l2->next;
-            }
-            else if(l1 != NULL && l2 == NULL){
-                cur->val = l1->val;
+        while(l1 || l2){
+            if(l1){
+                cur->val += l1->val;
                 l1 = l1->next;
             }
-            else{
-                if(carry) cur->val = 1;
-                else if(prev != NULL){
-                    prev->next = NULL;
-                    delete cur;
-                }
-                return result;
+            if(l2){
+                cur->val += l2->val;
+                l2 = l2->next;
             }
             
             if(carry){
@@ -49,6 +36,13 @@ public:
             cur->next = new ListNode(0);
             prev = cur;
             cur = cur->next;
-            }
         }
+        
+        if(carry) cur->val = 1;
+        else if(prev != NULL){
+            prev->next = NULL;
+            delete cur;
+        }
+        return result;
+    }
 };
