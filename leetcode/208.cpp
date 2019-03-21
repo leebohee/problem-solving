@@ -1,10 +1,11 @@
 struct Node{
-    char val;
-    vector <Node*> next;
-    
-    Node(char _val){
-        val = _val;
-    }
+	Node** next;
+	bool end;
+	
+	Node(){
+		next = new Node* [26] (); // map a~z into 0~25
+		end = false;
+	}
 };
 
 class Trie {
@@ -13,95 +14,54 @@ private:
 public:
     /** Initialize your data structure here. */
     Trie() {
-        root = new Node('-');
+        root = new Node;
     }
     
     /** Inserts a word into the trie. */
     void insert(string word) {
+        int len = word.length();
         Node* cur = root;
-        int len = word.length(), size;
-        bool find;
         
         for(int i=0; i<len; i++){
-            size = (cur->next).size();
-            find = false;
-            for(int j=0; j<size; j++){
-                if(!cur->next[j]){
-                    continue;
-                }
-                if(word.at(i) == cur->next[j]->val){
-                    cur = cur->next[j];
-                    find = true;
-                    break;
-                }
-            }
-            if(!find){
-                (cur->next).push_back(new Node(word.at(i)));
-                cur = cur->next[size];
-            }
+        	int idx = word.at(i)-'a';
+        	if(!cur->next[idx]){
+				cur->next[idx] = new Node;
+			}
+        	cur = cur->next[idx];
         }
-        cur->next.push_back(NULL);
+        cur->end = true;
     }
     
     /** Returns if the word is in the trie. */
     bool search(string word) {
-        Node* cur = this->root;
-        int len = word.length(), size;
-        bool find;
+        int len = word.length();
+        Node* cur = root;
         
         for(int i=0; i<len; i++){
-            size = cur->next.size();
-            find = false;
-            for(int j=0; j<size; j++){
-                if(!cur->next[j]){
-                    continue;
-                }
-                if(word.at(i) == cur->next[j]->val){
-                    cur = cur->next[j];
-                    find = true;
-                    break;
-                }
-            }
-            if(!find){
-                return false;
-            }
+        	int idx = word.at(i)-'a';
+        	if(!cur->next[idx]){
+        		return false;
+			}
+        	cur = cur->next[idx];
         }
-        
-        // find NULL 
-        size = cur->next.size();
-        for(int j=0; j<size; j++){
-            if(!cur->next[j]){
-                return true;
-            }
-        }
-        return false;      
+        // check if it is end of word
+        return (cur->end ? true : false);
     }
     
     /** Returns if there is any word in the trie that starts with the given prefix. */
     bool startsWith(string prefix) {
-        Node* cur = this->root;
-        int len = prefix.length(), size;
-        bool find;
+        int len = prefix.length();
+        Node* cur = root;
         
         for(int i=0; i<len; i++){
-            size = cur->next.size();
-            find = false;
-            for(int j=0; j<size; j++){
-                if(!cur->next[j]){
-                    continue;
-                }
-                if(prefix.at(i) == cur->next[j]->val){
-                    cur = cur->next[j];
-                    find = true;
-                    break;
-                }
-            }
-            if(!find){
-                return false;
-            }
+        	int idx = prefix.at(i)-'a';
+        	if(!cur->next[idx]){
+        		return false;
+			}
+        	cur = cur->next[idx];
         }
-        return true; 
-        
+        return true;
+ 
     }
 };
 
