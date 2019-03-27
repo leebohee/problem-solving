@@ -9,7 +9,7 @@ public:
         int rows = wall.size(), bricks, len, result;
         
         for(int i=0; i<rows; i++){
-            bricks = wall[i].size();
+            bricks = wall[i].size() - 1;
             len = 0;
             for(int j=0; j<bricks; j++){
                 len += wall[i][j];
@@ -22,14 +22,11 @@ public:
             }
         }
         
-        if(um.size() == 1){
-            return um.find(len)->second;
-        }
-        else{
-            um.erase(um.find(len));
+        result = 0;
+        for(auto itr=um.begin(); itr!=um.end(); itr++){
+            result = max(itr->second, result);
         }
         
-        result = rows - (max_element(um.begin(), um.end(), cmp)->second);
-        return result;  
+        return rows-result;  
     }
 };
