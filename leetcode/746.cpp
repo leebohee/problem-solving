@@ -1,22 +1,14 @@
 class Solution {
 public:
-    int minCostToN(vector<int>& cost, int n, int memo[]){
-        if(n == 1){ // on 1st floor
-            return 0;
-        }
-        else if(n == 2){ // 2 steps from 0th floor vs 1 step from 1st floor
-            return min(cost[0], cost[1]);
-        }
-        
-        if(!memo[n]){
-            memo[n] = min(minCostToN(cost, n-1, memo)+cost[n-1], minCostToN(cost, n-2, memo)+cost[n-2]);
-        }
-        return memo[n];
-    }
     int minCostClimbingStairs(vector<int>& cost) {
         int n = cost.size();
-        int* memo = new int [n+1];
-        memset(memo, 0, (n+1)*sizeof(int));
-        return minCostToN(cost, n, memo);
+        int f = 0, f1 = 0, f2 = 0;
+        for(int i=2; i<=n; i++){
+            f = min(cost[i-1]+f1, cost[i-2]+f2);
+            f2 = f1;
+            f1 = f;
+        }
+        
+        return f;
     }
 };
