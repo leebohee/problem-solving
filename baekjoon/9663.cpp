@@ -7,14 +7,8 @@ class NQueen{
 	private:
 		int N;
 		int cases;
-		int* queens;
-	public:
-		NQueen(int _N){
-			N = _N;
-			cases = 0;
-			queens = new int [N];
-			memset(queens, -1, sizeof(int)*N);
-		}
+		int* queens; // index -> row, value -> column
+		
 		bool IsPossible(int r, int c){
 			for(int i=0; i<r; i++){
 				// a queen exists at the same vertical line
@@ -39,6 +33,14 @@ class NQueen{
 				}
 			}
 		}
+	public:
+		NQueen(int _N){
+			N = _N;
+			cases = 0;
+			queens = new int [N];
+			memset(queens, -1, sizeof(int)*N);
+		}
+		
 		
 		int Cases(void){
 			for(int i=0; i<N; i++){
