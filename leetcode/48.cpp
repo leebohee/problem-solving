@@ -1,17 +1,15 @@
 class Solution {
 public:
-    /***********************************
-    1 2 3      7 8 9      7 4 1
-    4 5 6  ->  4 5 6  ->  8 5 2
-    7 8 9      1 2 3      9 6 3
-    ***********************************/
     void rotate(vector<vector<int>>& matrix) {
-        reverse(matrix.begin(), matrix.end());
-        int n = matrix.size();
-        for(int i=0; i<n; i++){
-            for(int j=i; j<n; j++){
-                swap(matrix[i][j], matrix[j][i]);
-            }
-        }
+        int tmp, limit = matrix.size()/2, N=matrix.size();
+        for(int layer=0; layer<limit; layer++){
+            for(int i=layer; i<N-(layer+1); i++){
+                tmp = matrix[layer][i];
+                matrix[layer][i] = matrix[N-1-i][layer];
+                matrix[N-1-i][layer] = matrix[N-1-layer][N-1-i];
+                matrix[N-1-layer][N-1-i] = matrix[i][N-1-layer];
+                matrix[i][N-1-layer] = tmp;
+            }    
+        }  
     }
 };

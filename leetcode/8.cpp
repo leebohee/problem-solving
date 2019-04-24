@@ -1,5 +1,4 @@
-int StrToInt(string str){
-	class Solution {
+class Solution {
 public:
     int myAtoi(string str) {
         int len = str.length();
@@ -26,34 +25,22 @@ public:
         // number
         int result = 0;
         while(idx < len && (str.at(idx) >= '0' && str.at(idx) <= '9')){
-            // determine overflow
-            if(sign){ // positive
-                if(result > INT_MAX / 10){
-                    return INT_MAX;
-                }	
-                else if(result*10 > INT_MAX - (str.at(idx) - '0')){
-                    return INT_MAX;
-                }
-                else{
-                    result = result*10 + (str.at(idx) - '0');
-                }
+        	// check overflow
+            if(result > INT_MAX/10 || (result == INT_MAX/10 && str.at(idx) > '7')){
+                return INT_MAX;  
+            } 
+            if(result < INT_MIN/10 || (result == INT_MIN/10 && str.at(idx) > '8')){
+                return INT_MIN;  
             }
-            else{ // negative
-                if(result < INT_MIN / 10){
-                    return INT_MIN;
-                }	
-                else if(result*10 < INT_MIN + (str.at(idx) - '0')){
-                    return INT_MIN;
-                }
-                else{
-                    result = result*10 - (str.at(idx) - '0');
-                }
+            
+            if(sign){
+                result = result*10 + (str.at(idx)-'0');    
+            }
+            else{
+                result = result*10 - (str.at(idx)-'0');    
             }
             idx++;
         }      
         return result;
     }
 };
-	
-	
-}

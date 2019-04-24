@@ -6,9 +6,9 @@ public:
         
         while(end < len){
             auto itr = um.find(s.at(end));
-            if(itr != um.end()){ // repeated character
+            if(itr != um.end() && start <= (itr->second)){ // repeated character
                 sublen = max(sublen, end-start);
-                start = max((itr->second)+1, start);
+                start = (itr->second)+1;
             }
             um[s.at(end)] = end;
             end++;
