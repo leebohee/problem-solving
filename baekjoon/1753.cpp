@@ -39,7 +39,7 @@ public:
 		}
 		dist[src] = 0;
 
-		q.push({dist[src], src});
+		q.emplace(dist[src], src);
 		while(!q.empty()){
 			// choose next vertex
 			cur = q.top().second;
@@ -53,7 +53,7 @@ public:
 			for(auto edge: adj[cur]){
 				if(dist[edge.first] > dist[cur] + edge.second){
 					dist[edge.first] = dist[cur] + edge.second;
-					q.push({dist[edge.first], edge.first});
+					q.emplace(dist[edge.first], edge.first);
 				}
 			}
 		}
