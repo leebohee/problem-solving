@@ -99,6 +99,7 @@ private:
 			idx = 0;
 			n = elements.size();
 			for(int j=0; j<n; j++){
+				if(idx >= MAX_SIZE) break; // out-of-range
 				new_arr[idx++][i] = elements[j].val;
 				new_arr[idx++][i] = elements[j].cnt;
 			}
