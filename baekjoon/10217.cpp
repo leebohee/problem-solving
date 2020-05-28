@@ -3,71 +3,59 @@
 #include <queue>
 #include <utility>
 #include <tuple>
-#include <unordered_map>
 
-#define MAX_DIST 10000000 // 1000*10000 (E*t)
+#define MAX_TIME 100000 // 1000*100 (t*N)
 
 using namespace std;
+using my_tuple = tuple<int, int, int>; // (accumulated_time, accumulated_cost, vertex)
 
 struct edge{
 	int v;
 	int cost;
-	int d;
-	edge(int v_, int cost_, int d_)
-	: v(v_), cost(cost_), d(d_) {};
+	int time;
+	edge(int v_, int cost_, int time_)
+	: v(v_), cost(cost_), time(time_) {};
 };
 
+
 int min_time(int N, int E, const vector<edge> adj[], int budget){
-	int cur, d, total_cost = 0;
-	int visit[N+1];
-	int dist[N+1];
-	// priority_queue< pair<int, int>, vector< pair<int, int> >, greater< pair<int, int> > > pq; // (accumulated_cost, vertex)
-	priority_queue< tuple<int, int, int>, vector< tuple<int, int, int> >, greater< tuple <int, int, int> > > pq; // (accumulated_dist, accumulated_cost, vertex)
-	//unordered_map <int, int> to_be_visited; // (vertex, accumulated_dist)
+	int cur, total_time, total_cost = 0, ret;
+	priority_queue<my_tuple, vector<my_tuple>, greater<my_tuple> > pq; 
+	// min_time[i][j]: 노드 i까지 j원으로 도착하는 최소 시간
+	int min_time[N+1][budget+1]; 
 
-	for(int i=0; i<N+1; i++){
-		visit[i] = false;
-		dist[i] = MAX_DIST;	
+	for(int i=0; i<budget; i++) min_time[1][i] = 0;
+	for(int i=2; i<N+1; i++){
+		for(int j=0; j<budget+1; j++){
+			min_time[i][j] = MAX_TIME;
+		}
 	}
-	dist[1] = 0;
-
+	
 	pq.emplace(0, 0, 1);
-	//to_be_visited.insert({1, 0});
 	while(!pq.empty()){
-		auto tup = pq.top();
-		d = get<0>(tup);
-		total_cost = get<1>(tup);
-		cur = get<2>(tup);
+		tie(total_time, total_cost, cur) = pq.top();
 		pq.pop();
 
-		//if(visit[cur]) continue;
-		visit[cur] = true;
-		//to_be_visited.erase(cur);
-		//cout << "visit " << cur << '\n';
-		//cout << "visit " << cur << " cost " << d << endl;
-		//if(total_cost > budget) continue; //return -1;
-		if(cur == N) return d;
+		if(cur == N) return total_time;
 
 		// update distance vector
 		for(auto e: adj[cur]){
-			if(dist[e.v] > dist[cur] + e.d){
-			//auto itr = to_be_visited.find(e.v);
-			//if(itr == to_be_visited.end() || itr->second > dist[cur] + e.d){
-				if(total_cost + e.cost <= budget){
-					dist[e.v] = dist[cur] + e.d;
-					pq.emplace(dist[e.v], total_cost + e.cost, e.v);
-					//to_be_visited[e.v] = dist[e.v];
-					//to_be_visited.insert({e.v, dist[e.v]});
+			int c = total_cost + e.cost;
+			int next = e.v;
+			if(c <= budget){
+				if(min_time[next][c] > min_time[cur][total_cost] + e.time){
+					min_time[next][c] = min_time[cur][total_cost] + e.time;
+					pq.emplace(min_time[next][c], c, next);
 				}
-				//cout << "push " << e.v << " : accumulated_dist = " << dist[e.v] << ", accumulated_cost =" << total_cost+e.cost << '\n';
 			}
 		}
-		dist[cur] = MAX_DIST;
 	}
 
-	//if(total_cost > budget) return -1;
-
-	return dist[N];
+	ret = MAX_TIME;
+	for(int i=0; i<budget; i++){
+		if(ret > min_time[N][i]) ret = min_time[N][i];
+	}
+	return ret;
 }
 
 int main(){
@@ -85,7 +73,7 @@ int main(){
 			// adj[u].emplace_back(edge(u, v, c, d));
 		}	
 		ret = min_time(N, K, adj, M);
-		if(ret < 0 || ret == MAX_DIST) cout << "Poor KCM\n";
+		if(ret < 0 || ret == MAX_TIME) cout << "Poor KCM\n";
 		else cout << ret << '\n';
 	}
 
