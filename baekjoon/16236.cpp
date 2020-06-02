@@ -1,183 +1,133 @@
-#include <vector>
-#include <utility>
 #include <iostream>
+#include <vector>
+#include <unordered_set>
 #include <queue>
+#include <tuple>
 #include <climits>
-#include <cstring>
-#include <algorithm>
+
+#define MAX_N 20
+#define MAX_DIST INT_MAX
 
 using namespace std;
 
-void ClearQueue(queue < vector <int> > &q){
-	while(!q.empty()){
-		q.pop();
-	}
-}
+int N;
+int sea[MAX_N][MAX_N];
 
-class BabyShark {
-	private:
-		int size;
-		int r;
-		int c;
-	public:
-		BabyShark(int _r, int _c){
-			size = 2;
-			r = _r;
-			c = _c;
-		}
-		int MealTime(int N, vector < vector <int> > map){
-			queue < vector <int> > q;
-			int second = 0, eat = 0;
-			vector <int> cur, tmp;
-			
-			bool** visit = new bool* [N];
-			for(int i=0; i<N; i++){
-				visit[i] = new bool [N];
-			}
-			
-			while(true){
-				pair <int, int> next = make_pair(N, N);
-				int s_next = INT_MAX;
-				
-				// initialize array checking visit
-				for(int i=0; i<N; i++){
-					memset(visit[i], false, sizeof(bool)*N);
-				}
-				
-				cur.push_back(r);
-				cur.push_back(c);
-				cur.push_back(second);
-				q.push(cur);
-				while(!q.empty()){
-					cur = q.front();
-					
-					// check visiting
-					if(visit[cur[0]][cur[1]]){
-						q.pop();
-						continue;
-					}
-					visit[cur[0]][cur[1]] = true;
-					
-					// check minimum distance from baby shark
-					if(cur[2] >= s_next) break; 
-					
-					// up
-					if(cur[0] > 0 && map[cur[0]-1][cur[1]] <= size && !visit[cur[0]-1][cur[1]]){ 
-						if(map[cur[0]-1][cur[1]] == 0 || map[cur[0]-1][cur[1]] == size){ // pass
-							tmp.push_back(cur[0]-1);
-							tmp.push_back(cur[1]);
-							tmp.push_back(cur[2]+1);
-							q.push(tmp);
-							tmp.clear();
-						}
-						else{ // fish 
-							if((next.first > cur[0]-1) || (next.first == cur[0]-1 && next.second > cur[1])){
-								next.first = cur[0]-1;
-								next.second = cur[1];
-								s_next = cur[2]+1;
-							}
-						}
-					}
-					// left
-					if(cur[1] > 0 && map[cur[0]][cur[1]-1] <= size && !visit[cur[0]][cur[1]-1]){ 
-						if(map[cur[0]][cur[1]-1] == 0 || map[cur[0]][cur[1]-1] == size){ // pass
-							tmp.push_back(cur[0]);
-							tmp.push_back(cur[1]-1);
-							tmp.push_back(cur[2]+1);
-							q.push(tmp);
-							tmp.clear();
-						}
-						else{ // fish 
-							if((next.first > cur[0]) || (next.first == cur[0] && next.second > cur[1]-1)){
-								next.first = cur[0];
-								next.second = cur[1]-1;
-								s_next = cur[2]+1;
-							}
-						}
-					}
-					// down
-					if(cur[0] < N-1 && map[cur[0]+1][cur[1]] <= size && !visit[cur[0]+1][cur[1]]){ 
-						if(map[cur[0]+1][cur[1]] == 0 || map[cur[0]+1][cur[1]] == size){ // pass
-							tmp.push_back(cur[0]+1);
-							tmp.push_back(cur[1]);
-							tmp.push_back(cur[2]+1);
-							q.push(tmp);
-							tmp.clear();
-						}
-						else{ // fish 
-							if((next.first > cur[0]+1) || (next.first == cur[0]+1 && next.second > cur[1])){
-								next.first = cur[0]+1;
-								next.second = cur[1];
-								s_next = cur[2]+1;
-							}
-						}
-					}
-					// right
-					if(cur[1] < N-1 && map[cur[0]][cur[1]+1] <= size && !visit[cur[0]][cur[1]+1]){ 
-						if(map[cur[0]][cur[1]+1] == 0 || map[cur[0]][cur[1]+1] == size){ // pass
-							tmp.push_back(cur[0]);
-							tmp.push_back(cur[1]+1);
-							tmp.push_back(cur[2]+1);
-							q.push(tmp);
-							tmp.clear();
-						}
-						else{ // fish 
-							if((next.first > cur[0]) || (next.first == cur[0] && next.second > cur[1]+1)){
-								next.first = cur[0];
-								next.second = cur[1]+1;
-								s_next = cur[2]+1;
-							}
-						}
-					}
-					q.pop();
-				}
-				
-				if(s_next == INT_MAX){ // no fish to eat
-					for(int i=0; i<N; i++){
-						delete [] visit[i];
-					}
-					delete [] visit;
-					return second;
-				}
-				else{
-					second = s_next;
-					map[r][c] = 0;
-					map[next.first][next.second] = 9;
-					r = next.first;
-					c = next.second;
-					eat++;
-					if(eat == size){ // baby shark grows
-						size++;
-						eat = 0;
-					}
- 				}
-				cur.clear();
-				ClearQueue(q);
-			}
-		}
+struct fish{
+	int size;
+	int r;
+	int c;
+	bool exist;
+	fish(int size_, int r_, int c_): size(size_), r(r_), c(c_), exist(true) {};
 };
 
+vector<fish> fishes;
+unordered_set<int> fishes1;
+
+class BabyShark{
+public:
+	BabyShark(int r_, int c_): size(2), r(r_), c(c_) {};
+
+	int max_time(){
+		int t = 0, n = fishes.size(), min_dist, dist, fidx, eat = 0;
+		bool find;
+
+		while(true){
+			// choose fish to eat
+			min_dist = MAX_DIST;
+			fidx = -1;
+			for(int i=0; i<n; i++){
+				if(fishes[i].exist && fishes[i].size < size){
+					dist = can_reach(r, c, fishes[i].r, fishes[i].c);
+					if(dist > 0 && min_dist > dist){
+						min_dist = dist;
+						fidx = i;
+					}
+				}
+				
+			}
+			
+			if(fidx < 0) break;
+
+			// move to the fish and eat it
+			r = fishes[fidx].r;
+			c = fishes[fidx].c;
+			t += min_dist;
+			fishes[fidx].exist = false;
+			eat++;
+			if(eat == size){
+				size++;
+				eat = 0;
+			}
+		}
+		return t;
+	}
+
+private:
+	int size;
+	int r;
+	int c;
+
+	bool valid(int r, int c){
+		if(r < 0 || r >= N || c < 0 || c >= N) return false;
+		else if(sea[r][c] > size) return false;
+		return true;
+	}
+
+	int can_reach(int src_r, int src_c, int dest_r, int dest_c){
+		int row, col, dist, next_r, next_c;
+		const int dr[4] = {-1, 0, 0, 1}; // 상, 좌, 우, 하
+		const int dc[4] = {0, -1, 1, 0};
+
+		queue< tuple<int, int, int> > q;
+		q.push({r, c, 0});
+
+		bool visit[N][N];
+		for(int i=0; i<N; i++){
+			for(int j=0; j<N; j++){
+				visit[i][j] = false;
+			}
+		}
+		
+		while(!q.empty()){
+			tie(row, col, dist) = q.front();
+			q.pop(); 
+
+			if(visit[row][col]) continue;
+			visit[row][col] = true;
+
+			if(row == dest_r && col == dest_c) return dist;
+			
+			for(int i=0; i<4; i++){
+				next_r = row + dr[i];
+				next_c = col + dc[i];
+				if(valid(next_r, next_c)){
+					q.push({next_r, next_c, dist+1});
+				}
+			}
+		}
+		return -1;
+	}
+};
+
+
 int main(){
-	int N, x, r, c;
-	vector < vector <int> > map;
-	vector <int> tmp;
-	
+	int r = 0, c = 0;
 	cin >> N;
 	for(int i=0; i<N; i++){
 		for(int j=0; j<N; j++){
-			cin >> x;
-			tmp.push_back(x);
-			if(x == 9){
+			cin >> sea[i][j];
+			if(sea[i][j] == 9){
 				r = i;
 				c = j;
-			}		
+				sea[i][j] = 0;
+			}
+			else if(sea[i][j] > 0){
+				fishes.emplace_back(sea[i][j], i, j);
+				fishes1.insert(i*N + j);
+			}
 		}
-		map.push_back(tmp);
-		tmp.clear();
 	}
-	BabyShark bs(r, c);
-	cout << bs.MealTime(N, map);
-	
-	return 0;
+	BabyShark baby(r, c);
+	cout << baby.max_time();
 }
-
