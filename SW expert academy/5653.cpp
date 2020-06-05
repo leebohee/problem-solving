@@ -2,22 +2,22 @@
 #include <cstdio>
 #include <map>
 #include <set>
-#include <utility>
+
+#define MAX_SIZE 651 // 300+50+300
+#define OFFSET 300
+
+//#pragma warning(disable : 4996)
 
 using namespace std;
 
 int N, M, K;
+int container[MAX_SIZE][MAX_SIZE] = { 0, };
+int alive_time[MAX_SIZE][MAX_SIZE] = { 0, };
 
-struct cell {
-	int lifespan;
-	int create;
-	bool dead;
-	cell() {};
-	cell(int x, int t) : lifespan(x), create(t), dead(false) {};
-};
-
-set< pair<int, int> > cells; // (row, col)
-map< pair<int, int>, cell > alive_cells;
+int valid(int r, int c) {
+	if (r < 0 || r >= MAX_SIZE || c < 0 || c >= MAX_SIZE) return false;
+	else return true;
+}
 
 int num_alive_cells() {
 	const int dr[4] = { -1, 1, 0, 0 };
@@ -25,50 +25,54 @@ int num_alive_cells() {
 	int cur_time = 0;
 
 	while (cur_time < K) {
-		map< pair<int, int>, cell > new_cells; // ((row, col), cell)
-		set < pair<int, int> > to_delete;
-		for (auto itr = alive_cells.begin(); itr != alive_cells.end(); itr++) {
-			pair<int, int> pos = itr->first;
-			cell cur_cell = (itr->second);
+		map< pair<int, int>, int > new_cells; // ((row, col), lifespan)
 
-			// become activate -> spread
-			if (cur_time == cur_cell.create + cur_cell.lifespan) {
-				for (int i = 0; i < 4; i++) {
-					int r = pos.first + dr[i];
-					int c = pos.second + dc[i];
-					pair<int, int> next = { r, c };
-					// no cell exists in that position
-					if (cells.find(next) == cells.end()) {
-						auto it = new_cells.find(next);
-						if (it == new_cells.end()) {
-							new_cells.insert({ next, cell(cur_cell.lifespan, cur_time + 1) });
+		for (int i = OFFSET - cur_time; i <= OFFSET + N + cur_time; i++) {
+			for (int j = OFFSET - cur_time; j <= OFFSET + M + cur_time; j++) {
+				if (container[i][j] == -1) continue;
+				if (container[i][j] > 0) {
+					if (container[i][j] == alive_time[i][j]) { // become activate
+						for (int k = 0; k < 4; k++) {
+							int r = i + dr[k];
+							int c = j + dc[k];
+							if (!valid(r, c)) continue;
+							if (container[r][c] == 0) {
+								if (new_cells.find({ r, c }) == new_cells.end()) {
+									new_cells.insert({ {r, c} , container[i][j] });
+								}
+								else if (new_cells[{r, c}] < container[i][j]) {
+									new_cells[{r, c}] = container[i][j];
+								}
+							}
 						}
-						else if (it->second.lifespan < cur_cell.lifespan) {
-							// insert: 중복된 키에 대한 value 업데이트 X
-							//new_cells.insert({ {r, c}, cell(cur_cell.lifespan, cur_time + 1) });
+					}
+					if (2 * container[i][j] > alive_time[i][j]) {
+						alive_time[i][j]++;
+					}
 
-							// []: 중복된 키에 대한 value 업데이트 O
-							it->second = cell(cur_cell.lifespan, cur_time + 1);
-						}
+					if (2 * container[i][j] == alive_time[i][j]) { // become dead
+						container[i][j] = -1;
 					}
 				}
 			}
-			// become dead
-			if (cur_time + 1 == cur_cell.create + 2 * cur_cell.lifespan) {
-				to_delete.insert(pos);
-			}
 		}
 		for (auto itr = new_cells.begin(); itr != new_cells.end(); itr++) {
-			alive_cells.insert({ itr->first, itr->second });
-			cells.insert(itr->first);
+			pair<int, int> pos = itr->first;
+			container[pos.first][pos.second] = itr->second;
+			alive_time[pos.first][pos.second] = 0;
 		}
-		cur_time++;
 
-		for (auto itr = to_delete.begin(); itr != to_delete.end(); itr++) {
-			alive_cells.erase(*itr);
+		cur_time++;
+	}
+	int cnt = 0;
+	for (int i = OFFSET - cur_time; i <= OFFSET + N + cur_time; i++) {
+		for (int j = OFFSET - cur_time; j <= OFFSET + M + cur_time; j++) {
+			if (container[i][j] > 0) {
+				cnt++;
+			}
 		}
 	}
-	return alive_cells.size();
+	return cnt;
 }
 
 int main() {
@@ -77,15 +81,16 @@ int main() {
 
 	for (int test_case = 1; test_case <= T; test_case++) {
 		scanf("%d %d %d", &N, &M, &K);
-		cells.clear();
-		alive_cells.clear();
+
+		for (int i = 0; i < MAX_SIZE; i++) {
+			for (int j = 0; j < MAX_SIZE; j++) {
+				container[i][j] = alive_time[i][j] = 0;
+			}
+		}
+
 		for (int i = 0; i < N; i++) {
 			for (int j = 0; j < M; j++) {
-				scanf("%d ", &x);
-				if (x > 0) {
-					alive_cells.insert({ {i, j}, cell(x, 0) });
-					cells.insert({i, j});
-				}
+				scanf("%d", &container[i + OFFSET][j + OFFSET]);
 			}
 		}
 		printf("#%d %d\n", test_case, num_alive_cells());
