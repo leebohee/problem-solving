@@ -8,6 +8,7 @@ using namespace std;
 
 int N, K;
 char edge[4][MAX_LEN];
+char str[MAX_N * 2];
 
 int convert_to_decimal(char* hex, int n) {
 	int ret = 0;
@@ -23,67 +24,46 @@ int convert_to_decimal(char* hex, int n) {
 }
 
 int password() {
-	int n = N / 4, ret;
+	int n = N / 4, ret, idx;
 	set<int> candidates;
 
 	// rotate n times
 	for (int i = 0; i < n; i++) {
-		//cout << "===== " << i << "th rotate ======\n";
+		idx = 0;
+		for (int j = 0; j < 4; j++) {
+			for (int k = 0; k < N / 4; k++) {
+				edge[j][k] = str[i+idx];
+				idx++;
+			}
+		}
 		// convert numbers on each edge
 		for (int j = 0; j < 4; j++) {
 			ret = convert_to_decimal(edge[j], n);
 			if (candidates.find(ret) == candidates.end()) {
 				candidates.insert(ret);
 			}
-			for (int k = 0; k < n; k++) {
-				//cout << edge[j][k];
-			}
-			//cout << '(' << ret << ')' << '\n';
 		}
-		// rotate
-		int store;
-		for (int j = 3; j >= 0; j--) {
-			int temp = edge[j][n - 1];
-			for (int k = n - 1; k > 0; k--) {
-				edge[j][k] = edge[j][k - 1];
-			}
-			if (j < 3) edge[j + 1][0] = temp;
-			else store = temp;
-		}
-		edge[0][0] = store;
 	}
+	// K-th largest element in the set
 	int size = candidates.size();
-	int idx = 0;
-	//cout << size - K << endl;
-	for (auto itr = candidates.begin(); itr != candidates.end(); itr++) {
-		cout << *itr << endl;
-		if (idx < size - K) idx++;
-		else {
-			ret = *itr;
-			break;
-		}
+	set<int>::iterator itr = candidates.begin(); // auto itr = candidates.begin();
+	for (int i = 0; i < size - K; i++) {
+		itr++;
 	}
-	return ret;
-	//auto itr = candidates.begin();
-	
-	//return *(candidates.begin() + (size - 1 - K));
-	//return candidates[size - 1 - K]; // k-th largest element
+	return *itr;
 }
 
 int main() {
-	freopen("input.txt", "r", stdin);
 	int T;
 	cin >> T;
 	for (int test_case = 1; test_case <= T; test_case++) {
 		cin >> N >> K;
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < N / 4; j++) {
-				cin >> edge[i][j];
-			}
+		for (int i = 0; i < N; i++) {
+			cin >> str[i];
+			str[i + N] = str[i];
 		}
 		cout << '#' << test_case << ' ' << password() << '\n';
 	}
-	
 
 	return 0;
 }
