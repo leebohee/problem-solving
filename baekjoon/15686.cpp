@@ -1,69 +1,85 @@
 #include <iostream>
-#include <vector>
 #include <climits>
+#include <vector>
 
 #define MAX_N 50
 #define MAX_M 13
 
 using namespace std;
 
-typedef struct pos{
-    int r;
-    int c;
-    pos(int r_, int c_): r(r_), c(c_) {};
-} Pos;
+struct Pos{
+	int r;
+	int c;
+	Pos(int r_, int c_): r(r_), c(c_) {};
+	void print(){
+		cout << "r = " << r << ", c = " << c << endl;
+	}
+};
 
-int N, M, chicken_cnt, house_cnt, result = INT_MAX;
+int N, M;
 int city[MAX_N][MAX_N];
+bool visited[MAX_M];
+
+int selected = 0;
+int min_dist = INT_MAX;
+
 vector<Pos> chicken;
 vector<Pos> house;
-bool choose[MAX_M] = {false, };
+int n_chicken = 0;
+int n_house = 0;
 
-int chicken_distance(){
-    int d, chicken_d = 0;
-    for(int i=0; i<house_cnt; i++){
-        d = INT_MAX;
-        for(int k=0; k<chicken_cnt; k++){
-            if(choose[k]){
-                d = min(d, abs(house[i].r-chicken[k].r)+abs(house[i].c-chicken[k].c));
-            }
-        }
-        chicken_d += d;
-        if(chicken_d > result) return INT_MAX;
-    }
-    return chicken_d;
+int distance(Pos& p1, Pos& p2){
+	return abs(p1.r-p2.r) + abs(p1.c-p2.c);
 }
 
-int min_chicken_distance(int n, int idx){
-    if(n <= M){
-        if(n > 0){
-            result = min(result, chicken_distance());
-        }
-        for(int i=idx; i<chicken_cnt; i++){
-            if(!choose[i]){
-                choose[i] = true;
-                min_chicken_distance(n+1, i+1);
-                choose[i] = false;
-            }
-        }
-    }
-    return result;
+int chicken_dist(){
+	int total_dist = 0;
+	for(int i=0; i<n_house; i++){
+		int dist = INT_MAX;
+		for(int j=0; j<n_chicken; j++){
+			if(visited[j]){
+				dist = min(dist, distance(house[i], chicken[j]));
+			}
+		}
+		total_dist += dist;
+	}
+
+	return total_dist;
+}
+
+void dfs(int index){
+	visited[index] = true;
+	selected++;
+
+	if(selected == M){
+		min_dist = min(min_dist, chicken_dist());
+	}
+	else{
+		for(int i=index+1; i<n_chicken; i++){
+			dfs(i);
+		}
+	}
+
+	visited[index] = false;
+	selected--;
 }
 
 int main(){
-    cin >> N >> M;
-    for(int i=0; i<N; i++){
-        for(int j=0; j<N; j++){
-            cin >> city[i][j];
-            if(city[i][j] == 1){ // house
-                house.push_back(Pos(i, j));
-            }
-            else if(city[i][j] == 2){ // chicken
-                chicken.push_back(Pos(i, j));
-            }
-        }
-    }
-    house_cnt = house.size();
-    chicken_cnt = chicken.size();
-    cout << min_chicken_distance(0, 0);
+	cin >> N >> M;
+	for(int i=0; i<N; i++){
+		for(int j=0; j<N; j++){
+			cin >> city[i][j];
+			if(city[i][j] == 1){
+				n_house++;
+				house.emplace_back(i, j);
+			}
+			else if(city[i][j] == 2){
+				n_chicken++;
+				chicken.emplace_back(i, j);
+			}
+		}
+	}
+	for(int i=0; i<n_chicken; i++) dfs(i);
+	cout << min_dist;
+    return 0;
 }
