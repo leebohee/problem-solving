@@ -1,119 +1,54 @@
 #include <iostream>
 
+#define MAX_N 26
+
 using namespace std;
 
-class Node {
-	public:
-		char val;
-		Node* left;
-		Node* right;
-		
-		Node(char _val){
-			val = _val;
-			left = NULL;
-			right = NULL;
-		}	
+struct Node{
+	char val;
+	int left;
+	int right;
+	Node(): val(-1), left(-1), right(-1) {};
 };
 
-class Btree {
-	public:
-		Node* root;
-		
-		Btree(){
-			root = new Node('A');
-		}
-		
-		Node* FindNode(Node* n, char val){
-			Node* tmp;
-			if(n != NULL){
-				if(n->val == val){
-					return n;
-				}
-				else{
-					tmp = FindNode(n->left, val);
-					if(tmp != NULL){
-						return tmp;
-					}
-					tmp = FindNode(n->right, val);
-					if(tmp != NULL){
-						return tmp;
-					}
-				}
-			}
-			return NULL;
-		}
-		
-		void AddNode(char val, char left, char right){
-			Node* tmp = FindNode(root, val);
+int N;
+Node tree[MAX_N];
 
-			if(left != '.'){
-				tmp->left = new Node(left);
-			}
-			if(right != '.'){
-				tmp->right = new Node(right);
-			}
-		}
-		
-		void ClearTree(Node* n){
-			if(n != NULL){
-				ClearTree(n->left);
-				ClearTree(n->right);
-				delete n;
-			}	
-		}	
-};
-
-void Visit(Node* n){
-	cout << (n->val);
+void preorder(int root){
+	cout << tree[root].val;
+	if(tree[root].left >= 0) preorder(tree[root].left);
+	if(tree[root].right >= 0) preorder(tree[root].right);
 }
 
-// left -> root -> right
-void Inorder(Node* n){
-	if(n != NULL){
-		Inorder(n->left);
-		Visit(n);
-		Inorder(n->right);	
-	}
+void inorder(int root){
+	if(tree[root].left >= 0) inorder(tree[root].left);
+	cout << tree[root].val;
+	if(tree[root].right >= 0) inorder(tree[root].right);
 }
 
-// root -> left -> right
-void Preorder(Node* n){
-	if(n != NULL){
-		Visit(n);
-		Preorder(n->left);
-		Preorder(n->right);	
-	}
-}
-
-// left -> right -> root
-void Postorder(Node* n){
-	if(n != NULL){
-		Postorder(n->left);
-		Postorder(n->right);
-		Visit(n);
-	}
+void postorder(int root){
+	if(tree[root].left >= 0) postorder(tree[root].left);
+	if(tree[root].right >= 0) postorder(tree[root].right);
+	cout << tree[root].val;
 }
 
 int main(){
-	int N;
-	char val, left, right;
-	Btree bt;
-	
+	char parent, left, right;
 	cin >> N;
 	
-	// make tree
-	for(int i=0; i<N; i++){
-		cin >> val >> left >> right;
-		bt.AddNode(val, left, right);
+	for (int i = 0; i < N; i++)
+	{
+		cin >> parent >> left >> right;
+		tree[parent-'A'].val = parent;
+		if(left != '.') tree[parent-'A'].left = left-'A';
+		if(right != '.') tree[parent-'A'].right = right-'A';
 	}
-	
-	Preorder(bt.root);
-	cout << endl;
-	Inorder(bt.root);
-	cout << endl;
-	Postorder(bt.root);
-	
-	bt.ClearTree(bt.root);
-	
+
+	preorder(0);
+	cout << '\n';
+	inorder(0);
+	cout << '\n';
+	postorder(0);
+
 	return 0;
 }
