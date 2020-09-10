@@ -10,7 +10,6 @@ char board[SIZE][SIZE];
 bool visit[SIZE][SIZE];
 int memo[SIZE][SIZE];
 int N, M;
-int result = 0;
 
 struct Pos {
 	int r;
@@ -23,7 +22,7 @@ bool valid(Pos& cur) {
 	else return true;
 }
 
-int dfs(Pos& cur, int move) {
+int dfs(Pos& cur) {
 	const static int dr[4] = { -1, 1, 0, 0 };
 	const static int dc[4] = { 0, 0, -1, 1 };
 	if (!valid(cur)) return 0;
@@ -31,7 +30,6 @@ int dfs(Pos& cur, int move) {
 
 	if (memo[cur.r][cur.c] <= 0) {
 		visit[cur.r][cur.c] = true;
-		result = max(result, move);
 		for (int i = 0; i < 4; i++) {
 			int next_r = cur.r + (board[cur.r][cur.c] - '0') * dr[i];
 			int next_c = cur.c + (board[cur.r][cur.c] - '0') * dc[i];
@@ -40,7 +38,7 @@ int dfs(Pos& cur, int move) {
 				printf("-1");
 				exit(0);
 			}
-			memo[cur.r][cur.c] = max(memo[cur.r][cur.c], dfs(next, move + 1) + 1);
+			memo[cur.r][cur.c] = max(memo[cur.r][cur.c], dfs(next) + 1);
 		}
 		visit[cur.r][cur.c] = false;
 	}
@@ -58,8 +56,9 @@ int main() {
 		}
 		scanf("%c", &ch);
 	}
+
 	Pos start;
-	dfs(start, 0);
+	dfs(start);
 	printf("%d\n", memo[0][0]);
 	return 0;
 }
